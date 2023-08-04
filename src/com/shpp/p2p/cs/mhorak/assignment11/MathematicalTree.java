@@ -38,12 +38,14 @@ public class MathematicalTree {
 
     /* List of mathematical operations, that can stay before minus,
     so that it means that it is not an operation, but just a negative number */
-    private static final ArrayList<Character> OPERATIONS_BEFORE_MINUS = new ArrayList<>(Arrays.asList('+', '/', '*', '^', '('));
+    private static final ArrayList<Character> OPERATIONS_BEFORE_MINUS =
+            new ArrayList<>(Arrays.asList('+', '/', '*', '^', '('));
 
-    ArrayList<String> OPERATIONS = new ArrayList<>(Arrays.asList("+","-","/","*","^","sin","cos","atan","tan","log10","log2", "sqrt"));
+    /* List of all operations, located in a priority from least to most */
+    ArrayList<String> OPERATIONS =
+            new ArrayList<>(Arrays.asList("+","-","/","*","^","sin","cos","atan","tan","log10","log2", "sqrt"));
 
     /**
-     * TODO: Comment
      * Creates a node basing on a string. Uses recursion
      * @param equation a string. An expression, a part of it, or just a single number,
      *                depending on the situation
@@ -56,41 +58,61 @@ public class MathematicalTree {
         //An index of found (or not) mathematical operation
         int index;
 
+        //An indicator, that tells if there were any operations found.
+        //If they weren't found, then we have to deal with parameter or number.
         boolean areAnyOperations = false;
-        boolean areThereAnyThisOperations = false;
+
+
 
         for (String operation: OPERATIONS) {
+
+            //An indicator that tells if there were any specific operations found.
+            //If they were found, then we have to check if there are any specific operations, that can match
+            //and then be processed
+            boolean areThereAnyThisOperations;
+
+            //We make a cycle to check all the operators and process them
             String checker = equation;
             do {
                 areThereAnyThisOperations = false;
 
-                if ((index = checker.lastIndexOf(operation)) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
+                //We check if the operator is found and if it is not inside brackets
+                if ((index = checker.lastIndexOf(operation)) != -1
+                        && !MathematicalTree.isInBrackets(index, equation)) {
                     //If it is a normal minus or any other operation
-                    if (!operation.equals("-") || (index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1)))) {
+                    if (!operation.equals("-")
+                            || (index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1)))) {
+                        //I differently process binary operators and functions (like unary operators)
+                        //Here I process binary operators
                         if (operation.length() == 1) {
                             node.info = operation;
                             node.leftNode = new TreeNode();
                             node.rightNode = new TreeNode();
                             createNode(equation.substring(0, index), node.leftNode);
                             createNode(equation.substring(index + 1), node.rightNode);
-                        } else {
+                        }
+                        //If it is a function, then there will be only right node, because it's unary
+                        else {
                             node.info = operation;
                             node.leftNode = null;
                             node.rightNode = new TreeNode();
                             createNode(equation.substring(index + operation.length()), node.rightNode);
                         }
 
+                        //If I found and processed an operator, then I exit the cycle
                         areAnyOperations = true;
                         break;
                     }
                 }
 
+                //Here I make sure that all the specific operators were processed
                 if (index != -1) {
                     checker = checker.substring(0, index);
                     areThereAnyThisOperations = true;
                 }
             } while (areThereAnyThisOperations);
 
+            //Making sure we exited this loop also
             if (areAnyOperations) {
                 break;
             }
@@ -109,6 +131,7 @@ public class MathematicalTree {
             areAnyOperations = true;
         }
 
+        //If we didn't find any operation, then it must be a number or parameter
         if (!areAnyOperations) {
             node.info = equation;
             node.leftNode = null;
@@ -116,6 +139,7 @@ public class MathematicalTree {
         }
 
     }
+
 
     //This string represents how the tree is visible with toString method
     private String string;
@@ -165,7 +189,6 @@ public class MathematicalTree {
     }
 
     /**
-     * TODO: Comment
      * Calculates a node
      * Puts the result of two leafs in the info of a current leaf as a string value
      * @param node a node to calculate result
@@ -188,6 +211,7 @@ public class MathematicalTree {
             return Double.parseDouble(node.info);
         }
 
+        //Here we have all the mathematical operations, and how to solve them
         switch (node.info) {
             case "-":
                 node.info = Double.toString(calculateNode(node.leftNode, variables)
@@ -281,6 +305,7 @@ public class MathematicalTree {
 
         boolean wasTheBracketsBefore;
 
+        //We remove all the unnecessary brackets, so we do it in a loop
         do {
             wasTheBracketsBefore = false;
 
