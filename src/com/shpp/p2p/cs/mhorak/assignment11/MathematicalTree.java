@@ -1,4 +1,4 @@
-package com.shpp.p2p.cs.mhorak.assignment10;
+package com.shpp.p2p.cs.mhorak.assignment11;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,10 +47,14 @@ public class MathematicalTree {
      * @param node a node to create and fill
      */
     private void createNode(String equation, TreeNode node) {
+        //Here we remove the border brackets if there are any
+        equation = MathematicalTree.removeBorderBrackets(equation);
+
         //An index of found (or not) mathematical operation
         int index;
 
-        if ((index = equation.lastIndexOf('+')) != -1) { //Firstly we check + operation (it will be in the root)
+        //Firstly we check + operation that is not in brackets (it will be in the root)
+        if ((index = equation.lastIndexOf('+')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "+";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
@@ -58,34 +62,42 @@ public class MathematicalTree {
             createNode(equation.substring(index + 1), node.rightNode);
         }
         //We must be sure that the minus is an operation and not just the negative number
-        //So here we check minus that is an operator and not a negative number
+        //So here we check minus that is an operator and not a negative number and not in brackets
         else if ((index = equation.lastIndexOf('-')) != -1
-                && index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1))) {
+                && index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1))
+                && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "-";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
             createNode(equation.substring(0, index), node.leftNode);
             createNode(equation.substring(index + 1), node.rightNode);
         }
-        else if ((index = equation.lastIndexOf('/')) != -1) { // Then we check /
+        // Then we check / that is not in brackets
+        else if ((index = equation.lastIndexOf('/')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "/";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
             createNode(equation.substring(0, index), node.leftNode);
             createNode(equation.substring(index + 1), node.rightNode);
-        } else if ((index = equation.lastIndexOf('*')) != -1) { //Then we check *
+        }
+        //Then we check * that is not in brackets
+        else if ((index = equation.lastIndexOf('*')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "*";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
             createNode(equation.substring(0, index), node.leftNode);
             createNode(equation.substring(index + 1), node.rightNode);
-        } else if ((index = equation.lastIndexOf('^')) != -1) { //Then we check ^
+        }
+        //Then we check ^ that is not in brackets
+        else if ((index = equation.lastIndexOf('^')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "^";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
             createNode(equation.substring(0, index), node.leftNode);
             createNode(equation.substring(index + 1), node.rightNode);
-        } else if ((index = equation.lastIndexOf('-')) == 0) { //At the las we check minus as a negative number
+        }
+        //At the las we check minus as a negative number and not in brackets
+        else if ((index = equation.lastIndexOf('-')) == 0 && !MathematicalTree.isInBrackets(index, equation)) {
             node.info = "-";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
@@ -200,6 +212,81 @@ public class MathematicalTree {
 
         //At the end we return the value we calculated
         return Double.parseDouble(node.info);
+    }
+
+    /**
+     * This function checks if an operator (or actually just a character) is in brackets or not
+     * @param index an index in expression on which the operator is
+     * @param expression an expression in which do we have to check
+     * @return true if an operator is between brackets, false if an operator is 'free'
+     */
+    private static boolean isInBrackets(int index, String expression) {
+        int countOfOpenedBrackets = 0;
+
+        //We are going through all the characters in an expression
+        for (int i = 0; i < expression.length(); i++) {
+
+            //We keep tracking on a count of opened brackets at the moment
+            if (expression.charAt(i) == '(') {
+                countOfOpenedBrackets++;
+            }
+
+            if (expression.charAt(i) == ')') {
+                countOfOpenedBrackets--;
+            }
+
+            //If we reached our character we check count of opened brackets and decide
+            if (i == index && countOfOpenedBrackets == 0) {
+                return false;
+            }
+            else if (i == index) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method removes useless brackets that are on the left and right of the expression
+     * @param expression an expression to remove brackets from
+     * @return a new expression without those brackets
+     */
+    private static String removeBorderBrackets(String expression) {
+
+        //We keep tracking on a count of opened brackets
+        int countOfOpenedBrackets = 0;
+
+        //And we check if it is needed to remove border brackets
+        boolean areThereBorderBrackets = true;
+
+        //We go through all the characters in an expression
+        for (int i = 0; i < expression.length(); i++) {
+            //Keep tracking on opened brackets
+            if (expression.charAt(i) == '(') {
+                countOfOpenedBrackets++;
+            }
+
+            //And here we decide if it is needed to remove those brackets
+            /*
+            * (a+b)*c - Note that there is a moment, where no brackets are opened
+            * ((a+b)*c) - While there is always at least one pair of brackets opened.
+            * So that is what we check here
+            */
+            if (countOfOpenedBrackets == 0) {
+                areThereBorderBrackets = false;
+                break;
+            }
+
+            if (expression.charAt(i) == ')') {
+                countOfOpenedBrackets--;
+            }
+        }
+
+        //And we simply remove a pair of brackets if it is needed
+        if (areThereBorderBrackets) {
+            return expression.substring(1, expression.length() - 1);
+        }
+        else return expression;
     }
 
 }

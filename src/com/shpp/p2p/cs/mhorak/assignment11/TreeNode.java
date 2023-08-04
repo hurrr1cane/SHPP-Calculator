@@ -1,4 +1,4 @@
-package com.shpp.p2p.cs.mhorak.assignment10;
+package com.shpp.p2p.cs.mhorak.assignment11;
 
 /**
  * The class, which represents a single node in a binary tree of a mathematical expression
