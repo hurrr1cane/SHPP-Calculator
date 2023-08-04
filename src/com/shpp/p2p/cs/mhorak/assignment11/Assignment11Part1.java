@@ -4,8 +4,13 @@ import java.util.HashMap;
 
 /*
  *
- * TODO: Support functions
+ * TODO: Support functions: sin, cos, tan, atan, log10, log2, sqrt
  *
+ * sin(a)
+ * sin(a+b)
+ * a+tg(sin(a+b))
+ *
+ * sin(a+cos(b))
  */
 
 /**
@@ -20,7 +25,7 @@ public class Assignment11Part1 {
      *             <br>
      *             All the rest arguments are the variables with their definitions
      */
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
 
         //Making sure that args is not empty
         if (args.length == 0) throw new AssertionError();
@@ -30,6 +35,29 @@ public class Assignment11Part1 {
             System.out.println(calculate(args[0], variables));
         } catch (Exception exception) {
             System.out.println("Error: " + exception.getMessage());
+        }
+
+    }*/
+
+    public static void main(String[] args) {
+
+        String[] string = new String[] {"1+(2+3*(4+5-sin(45*cos(0))))/7"};
+
+        /*//Making sure that args is not empty
+        if (string.length == 0) throw new AssertionError();
+
+        HashMap<String,Double> variables = getVariables(string);
+        try {
+            System.out.println(calculate(string[0], variables));
+        } catch (Exception exception) {
+            System.out.println("Error: " + exception.getMessage());
+        }*/
+        try {
+            MathematicalTree tree = new MathematicalTree(string[0]);
+            System.out.println(tree);
+            System.out.println(tree.getResult(new HashMap<String, Double>()));
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
         }
 
     }

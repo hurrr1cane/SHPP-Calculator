@@ -38,9 +38,12 @@ public class MathematicalTree {
 
     /* List of mathematical operations, that can stay before minus,
     so that it means that it is not an operation, but just a negative number */
-    private static final ArrayList<Character> OPERATIONS_BEFORE_MINUS = new ArrayList<>(Arrays.asList('+', '/', '*', '^'));
+    private static final ArrayList<Character> OPERATIONS_BEFORE_MINUS = new ArrayList<>(Arrays.asList('+', '/', '*', '^', '('));
+
+    ArrayList<String> OPERATIONS = new ArrayList<>(Arrays.asList("+","-","/","*","^","sin","cos","atan","tan","log10","log2", "sqrt"));
 
     /**
+     * TODO: Comment
      * Creates a node basing on a string. Uses recursion
      * @param equation a string. An expression, a part of it, or just a single number,
      *                depending on the situation
@@ -53,51 +56,48 @@ public class MathematicalTree {
         //An index of found (or not) mathematical operation
         int index;
 
-        //Firstly we check + operation that is not in brackets (it will be in the root)
-        if ((index = equation.lastIndexOf('+')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
-            node.info = "+";
-            node.leftNode = new TreeNode();
-            node.rightNode = new TreeNode();
-            createNode(equation.substring(0, index), node.leftNode);
-            createNode(equation.substring(index + 1), node.rightNode);
+        boolean areAnyOperations = false;
+        boolean areThereAnyThisOperations = false;
+
+        for (String operation: OPERATIONS) {
+            String checker = equation;
+            do {
+                areThereAnyThisOperations = false;
+
+                if ((index = checker.lastIndexOf(operation)) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
+                    //If it is a normal minus or any other operation
+                    if (!operation.equals("-") || (index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1)))) {
+                        if (operation.length() == 1) {
+                            node.info = operation;
+                            node.leftNode = new TreeNode();
+                            node.rightNode = new TreeNode();
+                            createNode(equation.substring(0, index), node.leftNode);
+                            createNode(equation.substring(index + 1), node.rightNode);
+                        } else {
+                            node.info = operation;
+                            node.leftNode = null;
+                            node.rightNode = new TreeNode();
+                            createNode(equation.substring(index + operation.length()), node.rightNode);
+                        }
+
+                        areAnyOperations = true;
+                        break;
+                    }
+                }
+
+                if (index != -1) {
+                    checker = checker.substring(0, index);
+                    areThereAnyThisOperations = true;
+                }
+            } while (areThereAnyThisOperations);
+
+            if (areAnyOperations) {
+                break;
+            }
         }
-        //We must be sure that the minus is an operation and not just the negative number
-        //So here we check minus that is an operator and not a negative number and not in brackets
-        else if ((index = equation.lastIndexOf('-')) != -1
-                && index != 0 && !OPERATIONS_BEFORE_MINUS.contains(equation.charAt(index - 1))
-                && !MathematicalTree.isInBrackets(index, equation)) {
-            node.info = "-";
-            node.leftNode = new TreeNode();
-            node.rightNode = new TreeNode();
-            createNode(equation.substring(0, index), node.leftNode);
-            createNode(equation.substring(index + 1), node.rightNode);
-        }
-        // Then we check / that is not in brackets
-        else if ((index = equation.lastIndexOf('/')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
-            node.info = "/";
-            node.leftNode = new TreeNode();
-            node.rightNode = new TreeNode();
-            createNode(equation.substring(0, index), node.leftNode);
-            createNode(equation.substring(index + 1), node.rightNode);
-        }
-        //Then we check * that is not in brackets
-        else if ((index = equation.lastIndexOf('*')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
-            node.info = "*";
-            node.leftNode = new TreeNode();
-            node.rightNode = new TreeNode();
-            createNode(equation.substring(0, index), node.leftNode);
-            createNode(equation.substring(index + 1), node.rightNode);
-        }
-        //Then we check ^ that is not in brackets
-        else if ((index = equation.lastIndexOf('^')) != -1 && !MathematicalTree.isInBrackets(index, equation)) {
-            node.info = "^";
-            node.leftNode = new TreeNode();
-            node.rightNode = new TreeNode();
-            createNode(equation.substring(0, index), node.leftNode);
-            createNode(equation.substring(index + 1), node.rightNode);
-        }
-        //At the las we check minus as a negative number and not in brackets
-        else if ((index = equation.lastIndexOf('-')) == 0 && !MathematicalTree.isInBrackets(index, equation)) {
+
+        //If it is a minus like a negative number
+        if (!areAnyOperations && (index = equation.lastIndexOf("-")) != -1){
             node.info = "-";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
@@ -105,13 +105,16 @@ public class MathematicalTree {
             node.leftNode.leftNode = null;
             node.leftNode.rightNode = null;
             createNode(equation.substring(index + 1), node.rightNode);
+
+            areAnyOperations = true;
         }
 
-        else { //If there aren't any operations left, we just fill the information
+        if (!areAnyOperations) {
             node.info = equation;
             node.leftNode = null;
             node.rightNode = null;
         }
+
     }
 
     //This string represents how the tree is visible with toString method
@@ -162,6 +165,7 @@ public class MathematicalTree {
     }
 
     /**
+     * TODO: Comment
      * Calculates a node
      * Puts the result of two leafs in the info of a current leaf as a string value
      * @param node a node to calculate result
@@ -170,7 +174,7 @@ public class MathematicalTree {
      * @throws Exception an error in calculation
      */
     private double calculateNode(TreeNode node, HashMap<String, Double> variables) throws Exception {
-        if (node.leftNode == null || node.rightNode == null) { //We reached a leaf
+        if (node.leftNode == null && node.rightNode == null) { //We reached a leaf
             //If we reached a leaf, we check if is a variable and change it to the value
             if (variables.containsKey(node.info)) {
                 node.info = Double.toString(variables.get(node.info));
@@ -184,30 +188,52 @@ public class MathematicalTree {
             return Double.parseDouble(node.info);
         }
 
-        //We just simply check all the operations and put the result as a string in an info field
-        if (node.info.equals("-")) {
-            node.info = Double.toString(calculateNode(node.leftNode, variables)
-                    - calculateNode(node.rightNode, variables));
-        }
-        if (node.info.equals("+")) {
-            node.info = Double.toString(calculateNode(node.leftNode, variables)
-                    + calculateNode(node.rightNode, variables));
-        }
-        if (node.info.equals("/")) {
-            //Checking for zero division
-            if (calculateNode(node.rightNode, variables) == 0) {
-                throw new Exception("Division by zero");
-            }
-            node.info = Double.toString(calculateNode(node.leftNode, variables)
-                    / calculateNode(node.rightNode, variables));
-        }
-        if (node.info.equals("*")) {
-            node.info = Double.toString(calculateNode(node.leftNode, variables)
-                    * calculateNode(node.rightNode, variables));
-        }
-        if (node.info.equals("^")) {
-            node.info = Double.toString(Math.pow(calculateNode(node.leftNode, variables),
-                    calculateNode(node.rightNode, variables)));
+        switch (node.info) {
+            case "-":
+                node.info = Double.toString(calculateNode(node.leftNode, variables)
+                        - calculateNode(node.rightNode, variables));
+                break;
+            case "+":
+                node.info = Double.toString(calculateNode(node.leftNode, variables)
+                        + calculateNode(node.rightNode, variables));
+                break;
+            case "/":
+                //Checking for zero division
+                if (calculateNode(node.rightNode, variables) == 0) {
+                    throw new Exception("Division by zero");
+                }
+                node.info = Double.toString(calculateNode(node.leftNode, variables)
+                        / calculateNode(node.rightNode, variables));
+                break;
+            case "*":
+                node.info = Double.toString(calculateNode(node.leftNode, variables)
+                        * calculateNode(node.rightNode, variables));
+                break;
+            case "^":
+                node.info = Double.toString(Math.pow(calculateNode(node.leftNode, variables),
+                        calculateNode(node.rightNode, variables)));
+                break;
+            case "sin":
+                node.info = Double.toString(Math.sin(calculateNode(node.rightNode, variables)));
+                break;
+            case "cos":
+                node.info = Double.toString(Math.cos(calculateNode(node.rightNode, variables)));
+                break;
+            case "tan":
+                node.info = Double.toString(Math.tan(calculateNode(node.rightNode, variables)));
+                break;
+            case "atan":
+                node.info = Double.toString(Math.atan(calculateNode(node.rightNode, variables)));
+                break;
+            case "log10":
+                node.info = Double.toString(Math.log10(calculateNode(node.rightNode, variables)));
+                break;
+            case "log2":
+                node.info = Double.toString(Math.log(calculateNode(node.rightNode, variables) / Math.log(2)));
+                break;
+            case "sqrt":
+                node.info = Double.toString(Math.sqrt(calculateNode(node.rightNode, variables)));
+                break;
         }
 
         //At the end we return the value we calculated
@@ -253,40 +279,49 @@ public class MathematicalTree {
      */
     private static String removeBorderBrackets(String expression) {
 
-        //We keep tracking on a count of opened brackets
-        int countOfOpenedBrackets = 0;
+        boolean wasTheBracketsBefore;
 
-        //And we check if it is needed to remove border brackets
-        boolean areThereBorderBrackets = true;
+        do {
+            wasTheBracketsBefore = false;
 
-        //We go through all the characters in an expression
-        for (int i = 0; i < expression.length(); i++) {
-            //Keep tracking on opened brackets
-            if (expression.charAt(i) == '(') {
-                countOfOpenedBrackets++;
+            //We keep tracking on a count of opened brackets
+            int countOfOpenedBrackets = 0;
+
+            //And we check if it is needed to remove border brackets
+            boolean areThereBorderBrackets = true;
+
+            //We go through all the characters in an expression
+            for (int i = 0; i < expression.length(); i++) {
+                //Keep tracking on opened brackets
+                if (expression.charAt(i) == '(') {
+                    countOfOpenedBrackets++;
+                }
+
+                //And here we decide if it is needed to remove those brackets
+                /*
+                 * (a+b)*c - Note that there is a moment, where no brackets are opened
+                 * ((a+b)*c) - While there is always at least one pair of brackets opened.
+                 * So that is what we check here
+                 */
+                if (countOfOpenedBrackets == 0) {
+                    areThereBorderBrackets = false;
+                    break;
+                }
+
+                if (expression.charAt(i) == ')') {
+                    countOfOpenedBrackets--;
+                }
             }
 
-            //And here we decide if it is needed to remove those brackets
-            /*
-            * (a+b)*c - Note that there is a moment, where no brackets are opened
-            * ((a+b)*c) - While there is always at least one pair of brackets opened.
-            * So that is what we check here
-            */
-            if (countOfOpenedBrackets == 0) {
-                areThereBorderBrackets = false;
-                break;
+            //And we simply remove a pair of brackets if it is needed
+            if (areThereBorderBrackets) {
+                expression = expression.substring(1, expression.length() - 1);
+                wasTheBracketsBefore = true;
             }
 
-            if (expression.charAt(i) == ')') {
-                countOfOpenedBrackets--;
-            }
-        }
+        } while (wasTheBracketsBefore);
 
-        //And we simply remove a pair of brackets if it is needed
-        if (areThereBorderBrackets) {
-            return expression.substring(1, expression.length() - 1);
-        }
-        else return expression;
+        return expression;
     }
 
 }
