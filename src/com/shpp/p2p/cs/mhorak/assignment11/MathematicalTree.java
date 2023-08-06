@@ -34,6 +34,7 @@ public class MathematicalTree {
         //Simply copying everything
         this.string = otherTree.string;
         this.rootNode = new TreeNode(otherTree.rootNode);
+        this.OPERATIONS = new ArrayList<>(otherTree.OPERATIONS);
     }
 
     /* List of mathematical operations, that can stay before minus,
