@@ -44,7 +44,7 @@ public class MathematicalTree {
 
     /* List of all operations, located in a priority from least to most */
     ArrayList<String> OPERATIONS =
-            new ArrayList<>(Arrays.asList("+","-","/","*","^","sin","cos","atan","tan","log10","log2", "sqrt"));
+            new ArrayList<>(Arrays.asList("+","-","/","*","^","sin","cos","atan","tan","log10","log2","sqrt"));
 
     /**
      * Creates a node basing on a string. Uses recursion
@@ -64,7 +64,7 @@ public class MathematicalTree {
         boolean areAnyOperations = false;
 
 
-
+        //Going through all the operations
         for (String operation: OPERATIONS) {
 
             //An indicator that tells if there were any specific operations found.
@@ -72,7 +72,7 @@ public class MathematicalTree {
             //and then be processed
             boolean areThereAnyThisOperations;
 
-            //We make a cycle to check all the operators and process them
+            //We make a loop to check all the operators and process them
             String checker = equation;
             do {
                 areThereAnyThisOperations = false;
