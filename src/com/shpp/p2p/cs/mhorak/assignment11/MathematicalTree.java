@@ -254,7 +254,7 @@ public class MathematicalTree {
                 node.info = Double.toString(Math.log10(calculateNode(node.rightNode, variables)));
                 break;
             case "log2":
-                node.info = Double.toString(Math.log(calculateNode(node.rightNode, variables) / Math.log(2)));
+                node.info = Double.toString(Math.log(calculateNode(node.rightNode, variables)) / Math.log(2));
                 break;
             case "sqrt":
                 node.info = Double.toString(Math.sqrt(calculateNode(node.rightNode, variables)));
