@@ -94,6 +94,13 @@ public class MathematicalTree {
                         }
                         //If it is a function, then there will be only right node, because it's unary
                         else {
+                            //I want to check if there are any minuses before found operation
+                            //Because of those operations are the last in priority, then if index is not 0,
+                            //Then there must be a unary minus before
+                            if (index != 0) {
+                                break;
+                            }
+
                             node.info = operation;
                             node.leftNode = null;
                             node.rightNode = new TreeNode();
