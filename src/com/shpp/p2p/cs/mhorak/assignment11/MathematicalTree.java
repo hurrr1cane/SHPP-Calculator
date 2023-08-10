@@ -127,7 +127,7 @@ public class MathematicalTree {
         }
 
         //If it is a minus like a negative number
-        if (!areAnyOperations && (index = equation.lastIndexOf("-")) != -1){
+        if (!areAnyOperations && (index = equation.indexOf("-")) != -1){
             node.info = "-";
             node.leftNode = new TreeNode();
             node.rightNode = new TreeNode();
