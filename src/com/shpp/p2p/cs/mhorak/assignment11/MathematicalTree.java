@@ -258,12 +258,24 @@ public class MathematicalTree {
                 node.info = Double.toString(Math.atan(calculateNode(node.rightNode, variables)));
                 break;
             case "log10":
+                //Checking for negative under logarithm
+                if (calculateNode(node.rightNode, variables) < 0) {
+                    throw new Exception("Negative number under logarithm");
+                }
                 node.info = Double.toString(Math.log10(calculateNode(node.rightNode, variables)));
                 break;
             case "log2":
+                //Checking for negative under logarithm
+                if (calculateNode(node.rightNode, variables) < 0) {
+                    throw new Exception("Negative number under logarithm");
+                }
                 node.info = Double.toString(Math.log(calculateNode(node.rightNode, variables)) / Math.log(2));
                 break;
             case "sqrt":
+                //Checking for negative under sqrt
+                if (calculateNode(node.rightNode, variables) < 0) {
+                    throw new Exception("Negative number under square root");
+                }
                 node.info = Double.toString(Math.sqrt(calculateNode(node.rightNode, variables)));
                 break;
         }
